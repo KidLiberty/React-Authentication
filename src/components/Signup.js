@@ -1,18 +1,38 @@
-import React, { useRef } from 'react'
-import { Form, Button, Card } from 'react-bootstrap'
+import React, { useState, useRef } from 'react'
+import { Form, Button, Card, Alert } from 'react-bootstrap'
 
 import { useAuth } from '../contexts/AuthContext'
 
 export default function Signup() {
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const emailRef = useRef()
   const passwordRef = useRef()
   const passwordConfirmRef = useRef()
   const { signup } = useAuth()
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
+    console.log(passwordRef.current.value)
+    console.log(passwordConfirmRef.current.value)
 
-    signup(emailRef.current.value, passwordRef.current.value)
+    if (
+      passwordRef.current.value.length < 6 ||
+      passwordConfirmRef.current.value.length < 6
+    ) {
+      return setError('Passwords must be at least 6 characters long.')
+    }
+    if (passwordRef.current.value !== passwordConfirmRef.current.value) {
+      return setError('Passwords do not match.')
+    }
+
+    try {
+      setError('')
+      setLoading(true)
+      await signup(emailRef.current.value, passwordRef.current.value)
+    } catch {
+      setError('Failed to create an account')
+    }
   }
 
   return (
@@ -20,7 +40,8 @@ export default function Signup() {
       <Card>
         <Card.Body>
           <h2 className='text-center mb-4'>Sign Up</h2>
-          <Form>
+          {error && <Alert variant='danger'>{error}</Alert>}
+          <Form onSubmit={handleSubmit}>
             <Form.Group id='email'>
               <Form.Label>Email</Form.Label>
               <Form.Control type='email' ref={emailRef} required></Form.Control>
@@ -41,7 +62,7 @@ export default function Signup() {
                 required
               ></Form.Control>
             </Form.Group>
-            <Button className='w-100' type='submit'>
+            <Button disabled={loading} className='w-100' type='submit'>
               Sign Up
             </Button>
           </Form>
