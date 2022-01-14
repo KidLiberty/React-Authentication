@@ -21,17 +21,46 @@ export function AuthProvider({ children }) {
     return unsubscribe
   }, [])
 
+  const contextValue = {
+    currentUser,
+    signup,
+    login,
+    logout,
+    resetPassword,
+    updateEmail,
+    updatePassword
+  }
+
+  /* 
+  Very modular, could change to your server if you did not
+  want to use Firebase 
+  */
   function signup(email, password) {
     return auth.createUserWithEmailAndPassword(email, password)
   }
 
-  const value = {
-    currentUser,
-    signup
+  function login(email, password) {
+    return auth.signInWithEmailAndPassword(email, password)
+  }
+
+  function logout() {
+    return auth.signOut()
+  }
+
+  function resetPassword(email) {
+    return auth.sendPasswordResetEmail(email)
+  }
+
+  function updateEmail(email) {
+    return currentUser.updateEmail(email)
+  }
+
+  function updatePassword(password) {
+    return currentUser.updatePassword(password)
   }
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={contextValue}>
       {!loading && children}
     </AuthContext.Provider>
   )
